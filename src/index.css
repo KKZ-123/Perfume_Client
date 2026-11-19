@@ -143,10 +143,10 @@ svg,
 /* App Layout */
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   background-color: var(--bg-app);
 }
 
@@ -160,11 +160,25 @@ svg,
   padding: 28px 18px 24px 20px;
   color: #ffffff;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
   height: 100vh;
   overflow-y: auto;
   user-select: none;
+}
+
+.sidebar-top-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 34px;
+}
+
+.mobile-header-user {
+  display: none;
 }
 
 .brand-wrapper {
@@ -172,7 +186,6 @@ svg,
   align-items: center;
   gap: 13px;
   padding-left: 6px;
-  margin-bottom: 34px;
   cursor: pointer;
 }
 
@@ -357,6 +370,7 @@ svg,
   width: 100%;
   max-width: 1440px;
   min-width: 0;
+  height: 100vh;
   margin: 0 auto;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1389,11 +1403,12 @@ svg,
 /* ── Tablet Portrait ≤ 768px ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .app-container {
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
     flex-direction: column;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
     overflow-x: hidden;
+    overflow-y: visible;
   }
 
   /* Sidebar becomes clean modern app header with two neat rows */
@@ -1405,29 +1420,35 @@ svg,
     position: sticky;
     top: 0;
     z-index: 900;
-    padding: 10px 16px 8px;
+    padding: 10px 14px 8px;
     background-color: var(--bg-sidebar);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    row-gap: 8px;
-    column-gap: 12px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow: visible;
   }
 
-  /* Unwrap the first div so its children (.brand-wrapper and .sidebar-nav) participate in the grid directly */
-  .sidebar > div:first-child {
-    display: contents;
+  .sidebar-top-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .sidebar-brand-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 0;
   }
 
   .brand-wrapper {
-    grid-column: 1 / 2;
-    grid-row: 1;
     margin-bottom: 0;
+    padding-left: 0;
     gap: 10px;
-    align-self: center;
   }
 
   .brand-icon-box {
@@ -1445,39 +1466,18 @@ svg,
     margin-top: 1px;
   }
 
+  .mobile-header-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .sidebar-footer {
-    grid-column: 2 / 3;
-    grid-row: 1;
-    padding-top: 0;
-    margin: 0;
-    align-self: center;
-    justify-self: end;
-  }
-
-  .user-profile-card {
-    padding: 5px 8px;
-    border-radius: 10px;
-    gap: 6px;
-  }
-
-  .user-avatar {
-    width: 28px;
-    height: 28px;
-    font-size: 11px;
-  }
-
-  .user-details {
     display: none;
-  }
-
-  .logout-btn {
-    padding: 4px;
   }
 
   /* Nav row: horizontal segmented bar spanning full width */
   .sidebar-nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
     display: flex;
     flex-direction: row;
     gap: 6px;
@@ -1521,12 +1521,11 @@ svg,
 
   /* Main content */
   .main-content {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
+    height: auto;
+    overflow-y: visible;
+    overflow-x: hidden;
     padding: 18px 16px 32px 16px;
     box-sizing: border-box;
-    overflow-x: hidden;
   }
 
   .dashboard-header {
@@ -1729,7 +1728,11 @@ svg,
   /* Sidebar collapses to compact header with 2 tidy rows */
   .sidebar {
     padding: 8px 12px 6px;
-    row-gap: 6px;
+    gap: 6px;
+  }
+
+  .sidebar-top-container {
+    gap: 6px;
   }
 
   .brand-wrapper {
@@ -1774,17 +1777,13 @@ svg,
     font-size: 10.5px;
   }
 
-  .user-profile-card {
-    padding: 4px 6px;
-  }
-
-  .user-avatar {
-    width: 26px;
-    height: 26px;
+  .mobile-header-user .user-avatar {
+    width: 28px;
+    height: 28px;
     font-size: 10px;
   }
 
-  .logout-btn {
+  .mobile-header-user .logout-btn {
     padding: 4px;
   }
 
@@ -2125,7 +2124,7 @@ svg,
 
   .sidebar {
     padding: 6px 8px 5px;
-    row-gap: 4px;
+    gap: 4px;
   }
 
   .brand-name {
