@@ -1283,6 +1283,20 @@ svg,
   margin-bottom: 16px;
 }
 
+.modal-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.modal-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
 /* ==========================================================================
    Responsive Design — Mobile / Tablet / Desktop
    Breakpoints: 480 (phone), 768 (tablet portrait), 1024 (tablet landscape / small desktop), 1200 (desktop)
@@ -1593,7 +1607,7 @@ svg,
     font-size: 14.5px;
   }
 
-  /* Tables — hide less important columns */
+  /* Tables */
   .invoices-table th {
     padding: 10px 10px;
     font-size: 10px;
@@ -1604,10 +1618,12 @@ svg,
     font-size: 12.5px;
   }
 
-  /* Hide Time and Payment columns in invoice table on tablet */
-  .invoices-table th:nth-child(2),
-  .invoices-table td:nth-child(2) {
-    display: none;
+  .invoices-table {
+    min-width: 540px;
+  }
+
+  .modal-form-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* Modals */
@@ -1882,26 +1898,26 @@ svg,
     font-size: 18px;
   }
 
-  /* Tables — hide less important columns on phone */
+  /* Tables — clear formatting with smooth horizontal scroll */
   .invoices-table th {
     padding: 8px 6px;
-    font-size: 9px;
+    font-size: 9.5px;
     letter-spacing: 0.04em;
   }
 
   .invoices-table td {
     padding: 10px 6px;
-    font-size: 11px;
+    font-size: 11.5px;
   }
 
-  /* Hide Time, Items, and Payment columns on phone */
-  .invoices-table th:nth-child(2),
-  .invoices-table td:nth-child(2),
-  .invoices-table th:nth-child(4),
-  .invoices-table td:nth-child(4),
-  .invoices-table th:nth-child(6),
-  .invoices-table td:nth-child(6) {
-    display: none;
+  .invoices-table {
+    min-width: 500px;
+  }
+
+  .modal-form-grid-2,
+  .modal-form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .status-badge {
@@ -1940,11 +1956,12 @@ svg,
   }
 
   .modal-card {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 16px 16px 0 0;
-    max-height: 92vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 92vh !important;
     padding: 18px 14px;
+    margin: 0 !important;
   }
 
   .modal-header {
@@ -1997,18 +2014,18 @@ svg,
     text-overflow: ellipsis;
   }
 
-  /* Action buttons — compact */
+  /* Action buttons — compact & responsive */
   .action-btn-outline,
   .action-btn-primary {
-    padding: 7px 10px;
-    font-size: 11px;
-    gap: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 5px;
+    white-space: nowrap;
   }
 
-  /* Hide button text on tiny screens, show icon only */
   .action-btn-outline span,
   .action-btn-primary span {
-    display: none;
+    display: inline;
   }
 
   /* Toast full width on phone */
@@ -2127,9 +2144,8 @@ svg,
     font-size: 9px;
   }
 
-  /* Show only critical table columns */
-  .invoices-table th:nth-child(3),
-  .invoices-table td:nth-child(3) {
+  .action-btn-outline span,
+  .action-btn-primary span {
     display: none;
   }
 
