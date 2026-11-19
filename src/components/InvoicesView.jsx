@@ -194,12 +194,6 @@ export const InvoicesView = ({ invoices = [], catalog = [], onAddInvoice }) => {
             className="action-btn-primary"
             onClick={() => setIsNewInvoiceOpen(true)}
             title="Create a new boutique invoice"
-            style={{
-              padding: '8px 16px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
           >
             <PlusIcon className="w-4 h-4" />
             <span>New Invoice</span>

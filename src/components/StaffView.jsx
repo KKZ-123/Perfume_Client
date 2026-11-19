@@ -178,12 +178,6 @@ export const StaffView = ({ currentUser }) => {
             className="action-btn-primary"
             onClick={() => setIsNewModalOpen(true)}
             title="Add new staff member"
-            style={{
-              padding: '8px 16px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
           >
             <PlusIcon className="w-4 h-4" />
             <span>New Staff</span>

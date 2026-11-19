@@ -556,9 +556,13 @@ svg,
 /* Dashboard Middle and Bottom Rows */
 .dashboard-row-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: 20px;
   margin-bottom: 22px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Card Container Styles */
@@ -571,6 +575,7 @@ svg,
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -755,6 +760,24 @@ svg,
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   display: block;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 5px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 9999px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: rgba(107, 47, 138, 0.25);
+  border-radius: 9999px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: var(--purple-brand);
 }
 
 .invoices-table {
@@ -1408,7 +1431,10 @@ svg,
     max-height: none;
     flex-direction: column;
     overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
   }
 
   /* Sidebar becomes clean modern app header with two neat rows */
@@ -1449,27 +1475,74 @@ svg,
     margin-bottom: 0;
     padding-left: 0;
     gap: 10px;
+    min-width: 0;
   }
 
   .brand-icon-box {
     width: 34px;
     height: 34px;
     border-radius: 10px;
+    flex-shrink: 0;
   }
 
   .brand-name {
     font-size: 17px;
+    white-space: nowrap;
   }
 
   .brand-sub {
     font-size: 8px;
     margin-top: 1px;
+    white-space: nowrap;
   }
 
   .mobile-header-user {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 3px 8px 3px 4px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .mobile-header-user:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .mobile-header-user .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .mobile-header-user .logout-btn {
+    padding: 3px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.18s ease;
+  }
+
+  .mobile-header-user .logout-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .sidebar-footer {
@@ -1488,31 +1561,56 @@ svg,
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     flex-wrap: nowrap;
+    box-sizing: border-box;
   }
 
   .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
     padding: 8px 6px;
     font-size: 12px;
     gap: 6px;
     border-radius: 8px;
-    flex: 1 1 0;
-    justify-content: center;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    cursor: pointer;
     text-align: center;
     transition: all 0.2s ease;
+  }
+
+  .nav-item:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .nav-item.active {
     background-color: var(--bg-sidebar-active);
     color: #ffffff;
+    font-weight: 600;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-item svg {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0;
   }
 
   .nav-item span:not(.nav-badge) {
-    display: inline;
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .nav-badge {
@@ -1524,8 +1622,12 @@ svg,
     height: auto;
     overflow-y: visible;
     overflow-x: hidden;
+    overflow-x: clip;
     padding: 18px 16px 32px 16px;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .dashboard-header {
@@ -1533,6 +1635,7 @@ svg,
     align-items: flex-start;
     gap: 12px;
     margin-bottom: 18px;
+    width: 100%;
   }
 
   .header-actions {
@@ -1760,7 +1863,7 @@ svg,
   }
 
   .nav-item {
-    padding: 7px 4px;
+    padding: 6px 3px;
     font-size: 11px;
     gap: 4px;
     border-radius: 7px;
@@ -1773,18 +1876,27 @@ svg,
 
   /* Show nav label text on phones */
   .nav-item span:not(.nav-badge) {
-    display: inline;
+    display: inline-block;
     font-size: 10.5px;
+    max-width: 100%;
+  }
+
+  .mobile-header-user {
+    padding: 2px 7px 2px 3px;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 9999px;
   }
 
   .mobile-header-user .user-avatar {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     font-size: 10px;
   }
 
   .mobile-header-user .logout-btn {
-    padding: 4px;
+    padding: 2px;
   }
 
   /* Main content */
@@ -1795,6 +1907,7 @@ svg,
     padding: 14px 10px 24px 10px;
     box-sizing: border-box;
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .dashboard-title {
@@ -1808,49 +1921,142 @@ svg,
   .dashboard-header {
     margin-bottom: 14px;
     gap: 10px;
+    width: 100%;
   }
 
   .header-actions {
-    gap: 6px;
-  }
-
-  /* Search input full-width on phone */
-  .header-actions .pos-input {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0;
-    flex: 1 1 100%;
-  }
-
-  /* Metrics: 2-column grid on phone (more compact than single col) */
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
     gap: 8px;
   }
 
+  /* Search input full-width on phone */
+  .header-actions .pos-input,
+  .header-actions .header-search-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
+    flex: 1 1 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Time filter group */
+  .time-filter-group {
+    padding: 2px;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .time-pill {
+    padding: 5px 8px;
+    font-size: 10.5px;
+    flex: 1 1 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  /* Action buttons: 50/50 side by side when paired */
+  .header-actions .action-btn-outline,
+  .header-actions .action-btn-primary {
+    padding: 8px 10px !important;
+    font-size: 12px;
+    gap: 5px;
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .action-btn-outline span,
+  .action-btn-primary span {
+    display: inline;
+  }
+
+  /* Status dropdown wrapper in invoices view */
+  .header-actions .status-dropdown-wrapper {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .header-actions .status-dropdown-wrapper .status-dropdown-trigger {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    min-width: 0;
+  }
+
+  /* When an action button is sole on its line (Register in Stock, New Staff in Staff) */
+  .header-actions > .action-btn-primary:only-of-type:last-child {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Metrics: 2-column grid on phone */
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .metric-card {
-    padding: 12px;
+    padding: 12px 10px;
     border-radius: 12px;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .metric-value {
-    font-size: 20px;
+    font-size: 19px;
     margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .metric-label {
     font-size: 11px;
     margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .metric-indicator {
-    font-size: 10.5px;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .metric-indicator span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .dashboard-row-grid {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    gap: 12px;
+    margin-bottom: 14px;
   }
 
   /* Charts */
@@ -1875,8 +2081,13 @@ svg,
 
   /* Cards */
   .dashboard-card {
-    padding: 14px;
+    padding: 14px 12px;
     border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .card-header-flex {
@@ -1915,7 +2126,7 @@ svg,
 
   .modal-form-grid-2,
   .modal-form-grid-3 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 10px;
   }
 
@@ -1995,36 +2206,6 @@ svg,
   .pos-label {
     font-size: 11.5px;
     margin-bottom: 4px;
-  }
-
-  /* Time filter pills */
-  .time-filter-group {
-    padding: 2px;
-    width: 100%;
-  }
-
-  .time-pill {
-    padding: 5px 8px;
-    font-size: 10.5px;
-    flex: 1;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Action buttons — compact & responsive */
-  .action-btn-outline,
-  .action-btn-primary {
-    padding: 8px 12px;
-    font-size: 12px;
-    gap: 5px;
-    white-space: nowrap;
-  }
-
-  .action-btn-outline span,
-  .action-btn-primary span {
-    display: inline;
   }
 
   /* Toast full width on phone */
@@ -2114,12 +2295,12 @@ svg,
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
 
   .metric-value {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .sidebar {
@@ -2134,18 +2315,23 @@ svg,
   .nav-item {
     padding: 5px 2px;
     font-size: 9.5px;
-    gap: 3px;
+    gap: 2px;
     flex-direction: column;
   }
 
+  .nav-item svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
   .nav-item span:not(.nav-badge) {
-    display: inline;
+    display: inline-block;
     font-size: 9px;
   }
 
   .action-btn-outline span,
   .action-btn-primary span {
-    display: none;
+    display: inline;
   }
 
   .chart-container {
@@ -2177,8 +2363,8 @@ svg,
   }
 
   .time-pill {
-    padding: 4px 6px;
-    font-size: 10px;
+    padding: 4px 5px;
+    font-size: 9.5px;
   }
 }
 

@@ -85,7 +85,6 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
             className="action-btn-primary"
             onClick={() => handleOpenRegisterModal('new')}
             title="Register new fragrance or receive inventory batch"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
             <PlusIcon className="w-4 h-4" />
             <span>Register</span>
