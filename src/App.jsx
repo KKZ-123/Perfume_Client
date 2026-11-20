@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   DashboardIcon, 
   BoxStockIcon, 
   InvoiceIcon, 
   UsersIcon,
-  LogoutIcon,
-  CheckIcon 
+  CheckIcon,
+  ChevronDownIcon
 } from './components/Icons';
 import { DashboardView } from './components/DashboardView';
 import { StockRegisterView } from './components/StockRegisterView';
 import { InvoicesView } from './components/InvoicesView';
 import { StaffView } from './components/StaffView';
 import { StaffDetailModal } from './components/StaffDetailModal';
+import { ProfilePopover } from './components/ProfilePopover';
 import { NewSaleModal } from './components/NewSaleModal';
 import { ExportReportModal } from './components/ExportReportModal';
 import { LogoutModal } from './components/LogoutModal';
 import { LoginView } from './components/LoginView';
 import { initialDashboardData, perfumeCatalog } from './data/mockData';
-import { clearAuthTokens, getRefreshToken, isJwtExpired, forceLogout } from './config/api';
+import { clearAuthTokens, getRefreshToken, isJwtExpired, forceLogout, fetchFullUserProfile } from './config/api';
 import logoImg from './assets/logo.png';
 
 export default function App() {
@@ -54,7 +55,127 @@ export default function App() {
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
+  const [profileAnchorRect, setProfileAnchorRect] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [openPasswordDirectly, setOpenPasswordDirectly] = useState(false);
+
+  // Sidebar compact (icon-only) & adjustable width state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('prestige_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    try {
+      const saved = parseInt(localStorage.getItem('prestige_sidebar_width'), 10);
+      if (!Number.isNaN(saved) && saved >= 200 && saved <= 340) {
+        return saved;
+      }
+      return 250;
+    } catch {
+      return 250;
+    }
+  });
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+
+  const toggleSidebarCollapsed = useCallback(() => {
+    setIsProfilePopoverOpen(false);
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('prestige_sidebar_collapsed', String(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  }, []);
+
+  const handleBrandClick = useCallback(() => {
+    if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      toggleSidebarCollapsed();
+    } else {
+      setCurrentNav('dashboard');
+    }
+  }, [toggleSidebarCollapsed]);
+
+  const handleSidebarResizeStart = useCallback((e) => {
+    e.preventDefault();
+    setIsResizingSidebar(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (moveEvent) => {
+      if (moveEvent.clientX < 140) {
+        setIsSidebarCollapsed(true);
+      } else {
+        setIsSidebarCollapsed(false);
+        const clampedWidth = Math.min(340, Math.max(200, moveEvent.clientX));
+        setSidebarWidth(clampedWidth);
+      }
+    };
+
+    const handleMouseUp = (upEvent) => {
+      setIsResizingSidebar(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      const collapsed = upEvent.clientX < 140;
+      try {
+        localStorage.setItem('prestige_sidebar_collapsed', String(collapsed));
+        if (!collapsed) {
+          const finalWidth = Math.min(340, Math.max(200, upEvent.clientX));
+          localStorage.setItem('prestige_sidebar_width', String(finalWidth));
+        }
+      } catch {
+        // ignore storage errors
+      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  // Sync full user profile info (Name, Email, User ID, Role, Initials) from backend
+  const handleUserProfileSynced = React.useCallback((updatedData) => {
+    if (!updatedData) return;
+    setCurrentUser((prev) => {
+      if (!prev) return prev;
+      const nextUser = { ...prev, ...updatedData };
+      try {
+        const saved = localStorage.getItem('aurelia_pos_user');
+        if (saved && saved !== 'null' && saved !== 'logged_out') {
+          localStorage.setItem('aurelia_pos_user', JSON.stringify(nextUser));
+        }
+      } catch {
+        // ignore storage errors
+      }
+      return nextUser;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    let active = true;
+    fetchFullUserProfile(currentUser).then((fullData) => {
+      if (active && fullData) {
+        handleUserProfileSynced(fullData);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.userid]);
+
+  const handleToggleProfilePopover = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setProfileAnchorRect(rect);
+    setIsProfilePopoverOpen((prev) => !prev);
+  };
   
   // Toast notifications
   const [toastMessage, setToastMessage] = useState(null);
@@ -87,6 +208,7 @@ export default function App() {
       setIsLogoutModalOpen(false);
       setIsSaleModalOpen(false);
       setIsExportModalOpen(false);
+      setIsProfilePopoverOpen(false);
       setIsProfileModalOpen(false);
       clearAuthTokens();
       setCurrentUser(null);
@@ -130,6 +252,7 @@ export default function App() {
   // Logout handler
   const handleLogout = () => {
     setIsLogoutModalOpen(false);
+    setIsProfilePopoverOpen(false);
     setIsProfileModalOpen(false);
     setCurrentUser(null);
     setCurrentNav('dashboard');
@@ -324,13 +447,28 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div
+      className={`app-container ${isSidebarCollapsed ? 'sidebar-is-collapsed' : ''} ${isResizingSidebar ? 'is-resizing-sidebar' : ''}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` }}
+    >
       {/* Dark Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="sidebar-top-container">
           <div className="sidebar-brand-section">
-            {/* Brand Logo & Name */}
-            <div className="brand-wrapper" onClick={() => setCurrentNav('dashboard')} role="button" tabIndex={0}>
+            {/* Brand Logo & Name (click to expand/collapse sidebar on desktop) */}
+            <div
+              className="brand-wrapper"
+              onClick={handleBrandClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleBrandClick();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              title={isSidebarCollapsed ? 'Click logo to expand menu' : 'Click logo to collapse menu'}
+            >
               <div className="brand-icon-box prestige-sidebar-logo-box">
                 <img src={logoImg} alt="Prestige Logo" className="brand-logo-img" />
               </div>
@@ -344,20 +482,13 @@ export default function App() {
             <div className="mobile-header-user">
               <div 
                 className="user-avatar" 
+                data-profile-trigger="true"
                 style={{ background: currentUser.avatarBg || 'var(--purple-brand)' }}
-                onClick={() => setIsProfileModalOpen(true)}
+                onClick={handleToggleProfilePopover}
                 title="View user profile"
               >
                 {currentUser.initials || 'AC'}
               </div>
-              <button 
-                className="logout-btn" 
-                title="Sign out of POS"
-                onClick={() => setIsLogoutModalOpen(true)}
-                aria-label="Sign out"
-              >
-                <LogoutIcon className="w-4 h-4" />
-              </button>
             </div>
           </div>
 
@@ -366,6 +497,7 @@ export default function App() {
             <button
               className={`nav-item ${currentNav === 'dashboard' ? 'active' : ''}`}
               onClick={() => setCurrentNav('dashboard')}
+              title="Dashboard"
             >
               <DashboardIcon className="w-5 h-5" />
               <span>Dashboard</span>
@@ -374,6 +506,7 @@ export default function App() {
             <button
               className={`nav-item ${currentNav === 'stock' ? 'active' : ''}`}
               onClick={() => setCurrentNav('stock')}
+              title="Stock (4 low)"
             >
               <BoxStockIcon className="w-5 h-5" />
               <span>Stock</span>
@@ -383,6 +516,7 @@ export default function App() {
             <button
               className={`nav-item ${currentNav === 'invoices' ? 'active' : ''}`}
               onClick={() => setCurrentNav('invoices')}
+              title="Invoices"
             >
               <InvoiceIcon className="w-5 h-5" />
               <span>Invoices</span>
@@ -391,6 +525,7 @@ export default function App() {
             <button
               className={`nav-item ${currentNav === 'staff' ? 'active' : ''}`}
               onClick={() => setCurrentNav('staff')}
+              title="Staff"
             >
               <UsersIcon className="w-5 h-5" />
               <span>Staff</span>
@@ -401,10 +536,11 @@ export default function App() {
         {/* User Card at bottom of sidebar */}
         <div className="sidebar-footer">
           <div 
-            className="user-profile-card"
-            onClick={() => setIsProfileModalOpen(true)}
+            className={`user-profile-card ${isProfilePopoverOpen ? 'active' : ''}`}
+            data-profile-trigger="true"
+            onClick={handleToggleProfilePopover}
             style={{ cursor: 'pointer' }}
-            title="Click to view full user profile"
+            title="Click to view user profile info"
           >
             <div className="user-info-group">
               <div 
@@ -418,19 +554,23 @@ export default function App() {
                 <span className="user-role">{currentUser.role}</span>
               </div>
             </div>
-            <button 
-              className="logout-btn" 
-              title="Sign out of POS"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLogoutModalOpen(true);
-              }}
-            >
-              <LogoutIcon className="w-4 h-4" />
-            </button>
+            <span className={`user-profile-chevron ${isProfilePopoverOpen ? 'open' : ''}`}>
+              <ChevronDownIcon size={15} />
+            </span>
           </div>
         </div>
       </aside>
+
+      {/* Desktop Drag-to-Resize / Collapse Handle */}
+      <div
+        className={`sidebar-resize-handle ${isResizingSidebar ? 'active' : ''}`}
+        onMouseDown={handleSidebarResizeStart}
+        onDoubleClick={toggleSidebarCollapsed}
+        title="Drag to adjust menu width · Double-click to collapse/expand"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+      />
 
       {/* Main Content View Container */}
       <main className="main-content">
@@ -465,13 +605,32 @@ export default function App() {
         )}
       </main>
 
-      {/* User Profile Modal */}
+      {/* Compact Profile Info Popover */}
+      <ProfilePopover
+        isOpen={isProfilePopoverOpen}
+        onClose={() => setIsProfilePopoverOpen(false)}
+        anchorRect={profileAnchorRect}
+        user={currentUser}
+        onUserUpdated={handleUserProfileSynced}
+        onOpenChangePassword={() => {
+          setOpenPasswordDirectly(true);
+          setIsProfileModalOpen(true);
+        }}
+        onSignOut={() => setIsLogoutModalOpen(true)}
+      />
+
+      {/* User Profile / Change Password Modal */}
       <StaffDetailModal
         isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
+        onClose={() => {
+          setIsProfileModalOpen(false);
+          setOpenPasswordDirectly(false);
+        }}
         staff={currentUser}
         currentUser={currentUser}
         title="User Profile"
+        initialChangePassword={openPasswordDirectly}
+        onUserUpdated={handleUserProfileSynced}
       />
 
       {/* New Sale POS Ring-up Modal */}

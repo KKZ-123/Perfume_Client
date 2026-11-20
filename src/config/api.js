@@ -122,12 +122,12 @@ export const clearAuthTokens = () => {
   }
 };
 
-// Decode JWT and check if it is expired
-export const isJwtExpired = (token) => {
-  if (!token || typeof token !== 'string') return true;
+// Decode JWT payload safely
+export const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== 'string') return null;
   try {
     const parts = token.split('.');
-    if (parts.length < 2) return false;
+    if (parts.length < 2) return null;
     const base64Url = parts[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
@@ -136,7 +136,17 @@ export const isJwtExpired = (token) => {
         .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
         .join('')
     );
-    const parsed = JSON.parse(jsonPayload);
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+};
+
+// Decode JWT and check if it is expired
+export const isJwtExpired = (token) => {
+  if (!token || typeof token !== 'string') return true;
+  try {
+    const parsed = decodeJwtPayload(token);
     if (!parsed || !parsed.exp) {
       return false;
     }
@@ -434,6 +444,121 @@ export const getUserProfile = async (userid) => {
   return await apiFetch(`${API_ENDPOINTS.USERS}/userid`, {
     method: 'GET'
   });
+};
+
+/**
+ * Resolves full user profile details (name, email, userid, role, createdAt)
+ * by combining JWT claims, GET /api/users/:userid, and fallback matching against GET /api/users.
+ */
+export const fetchFullUserProfile = async (userOrId) => {
+  const userObj = typeof userOrId === 'object' && userOrId !== null ? userOrId : {};
+  const token = userObj.accessToken || userObj.access_token || getAccessToken();
+  const jwtClaims = decodeJwtPayload(token) || {};
+  const jwtUser = jwtClaims.user || jwtClaims.data || jwtClaims;
+
+  const candidates = Array.from(
+    new Set(
+      [
+        typeof userOrId === 'string' ? userOrId : null,
+        userObj.userid,
+        userObj.id && userObj.id !== 'usr-active' ? userObj.id : null,
+        userObj.email,
+        jwtUser?.userid,
+        jwtUser?.id,
+        jwtUser?.sub,
+        jwtUser?.email,
+        getUserId()
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).trim())
+    )
+  );
+
+  let resolvedProfile = null;
+
+  // 1. Try GET /api/users/:id for candidate identifiers
+  for (const candidate of candidates) {
+    try {
+      const res = await apiFetch(`${API_ENDPOINTS.USERS}/${encodeURIComponent(candidate)}`, {
+        method: 'GET'
+      });
+      if (res.ok) {
+        const resData = await res.json().catch(() => ({}));
+        const record = resData.data || (resData.userid || resData.email || resData.name ? resData : null);
+        if (record && typeof record === 'object' && !Array.isArray(record)) {
+          resolvedProfile = record;
+          if (record.name && record.email) break;
+        }
+      }
+    } catch {
+      // continue to next candidate or list fallback
+    }
+  }
+
+  // 2. Fallback: Try GET /api/users list and match by userid, email, or id
+  if (!resolvedProfile || !resolvedProfile.name || !resolvedProfile.email) {
+    try {
+      const listRes = await apiFetch(API_ENDPOINTS.USERS, { method: 'GET' });
+      if (listRes.ok) {
+        const listData = await listRes.json().catch(() => ({}));
+        const usersList = Array.isArray(listData.data)
+          ? listData.data
+          : Array.isArray(listData)
+            ? listData
+            : [];
+
+        const lowerCandidates = candidates.map((c) => c.toLowerCase());
+        const matched = usersList.find((u) => {
+          if (!u) return false;
+          const uId = String(u.userid || '').toLowerCase();
+          const uEmail = String(u.email || '').toLowerCase();
+          const uUuid = String(u.id || '').toLowerCase();
+          return (
+            (uId && lowerCandidates.includes(uId)) ||
+            (uEmail && lowerCandidates.includes(uEmail)) ||
+            (uUuid && lowerCandidates.includes(uUuid))
+          );
+        });
+
+        if (matched) {
+          resolvedProfile = { ...(resolvedProfile || {}), ...matched };
+        }
+      }
+    } catch {
+      // ignore fallback error
+    }
+  }
+
+  const merged = {
+    ...(jwtUser && typeof jwtUser === 'object' ? jwtUser : {}),
+    ...userObj,
+    ...(resolvedProfile || {})
+  };
+
+  const finalName =
+    resolvedProfile?.name ||
+    jwtUser?.name ||
+    (userObj.name && userObj.name !== 'Staff User' ? userObj.name : '') ||
+    resolvedProfile?.userid ||
+    userObj.userid ||
+    'Staff User';
+
+  const finalInitials = finalName
+    .trim()
+    .split(/\s+/)
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'PS';
+
+  return {
+    ...merged,
+    name: finalName,
+    email: resolvedProfile?.email || jwtUser?.email || userObj.email || merged.userid || '',
+    userid: resolvedProfile?.userid || jwtUser?.userid || userObj.userid || candidates[0] || '',
+    role: resolvedProfile?.role || jwtUser?.role || (userObj.role && userObj.role !== 'Fragrance Specialist' ? userObj.role : '') || userObj.role || 'Staff',
+    initials: finalInitials
+  };
 };
 
 /**

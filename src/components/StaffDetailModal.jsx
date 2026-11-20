@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CloseIcon, LockIcon, KeyIcon, EyeIcon, EyeOffIcon, CheckIcon } from './Icons';
-import { getUserProfile, updateUserPassword, encodeBase64, getUserId, apiFetch, API_ENDPOINTS } from '../config/api';
+import { getUserProfile, fetchFullUserProfile, updateUserPassword, encodeBase64, getUserId, apiFetch, API_ENDPOINTS } from '../config/api';
 
-export const StaffDetailModal = ({ isOpen, onClose, staff, currentUser, title = 'Staff Profile' }) => {
+export const StaffDetailModal = ({
+  isOpen,
+  onClose,
+  staff,
+  currentUser,
+  title = 'Staff Profile',
+  initialChangePassword = false,
+  onUserUpdated
+}) => {
   const [profileData, setProfileData] = useState(staff || null);
   const [apiSynced, setApiSynced] = useState(false);
 
@@ -29,29 +37,24 @@ export const StaffDetailModal = ({ isOpen, onClose, staff, currentUser, title = 
 
   // Fetch user profile quietly in the background
   const fetchProfile = useCallback(async () => {
-    if (!targetUserId) return;
+    if (!targetUserId && !staff && !currentUser) return;
 
     try {
-      const response = await getUserProfile(targetUserId);
-      const resData = await response.json().catch(() => ({}));
-
-      if (response.ok && resData.success && resData.data) {
+      const fullData = await fetchFullUserProfile(staff || currentUser || targetUserId);
+      if (fullData) {
         setProfileData((prev) => ({
           ...prev,
-          ...resData.data
+          ...fullData
         }));
         setApiSynced(true);
-      } else if (response.ok && (resData.userid || resData.id)) {
-        setProfileData((prev) => ({
-          ...prev,
-          ...resData
-        }));
-        setApiSynced(true);
+        if (onUserUpdated && (staff === currentUser || fullData.userid === currentUser?.userid)) {
+          onUserUpdated(fullData);
+        }
       }
     } catch (err) {
       console.warn('Could not fetch user profile from backend API:', err.message);
     }
-  }, [targetUserId]);
+  }, [targetUserId, staff, currentUser, onUserUpdated]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,14 +63,14 @@ export const StaffDetailModal = ({ isOpen, onClose, staff, currentUser, title = 
       setProfileData(staff);
     }
     setApiSynced(false);
-    setIsChangingPassword(false);
+    setIsChangingPassword(Boolean(initialChangePassword));
     setNewPassword('');
     setConfirmPassword('');
     setPassError('');
     setPassSuccess('');
 
     fetchProfile();
-  }, [isOpen, staff, fetchProfile]);
+  }, [isOpen, staff, initialChangePassword, fetchProfile]);
 
   // Handler for updating password via PUT localhost:5000/api/users/:userid
   const handleChangePasswordSubmit = async (e) => {

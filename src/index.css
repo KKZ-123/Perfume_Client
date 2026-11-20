@@ -152,7 +152,7 @@ svg,
 
 /* Sidebar */
 .sidebar {
-  width: 250px;
+  width: var(--sidebar-width, 250px);
   background-color: var(--bg-sidebar);
   display: flex;
   flex-direction: column;
@@ -162,19 +162,121 @@ svg,
   flex-shrink: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   user-select: none;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.is-resizing-sidebar .sidebar {
+  transition: none !important;
+}
+
+/* Collapsed mini icon-only sidebar (keeps logo, menu icons, and user avatar) */
+.sidebar.sidebar-collapsed {
+  width: 78px !important;
+  padding: 24px 12px 20px 12px;
+}
+
+.sidebar.sidebar-collapsed .sidebar-brand-section {
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.sidebar.sidebar-collapsed .brand-wrapper {
+  padding-left: 0;
+  gap: 0;
+  justify-content: center;
+}
+
+.sidebar.sidebar-collapsed .brand-text {
+  display: none;
+}
+
+.sidebar.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+  position: relative;
+}
+
+.sidebar.sidebar-collapsed .nav-item span:not(.nav-badge) {
+  display: none;
+}
+
+.sidebar.sidebar-collapsed .nav-badge {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  margin: 0;
+  font-size: 0;
+  border-radius: 50%;
+  background: var(--gold-accent);
+  box-shadow: 0 0 0 2px var(--bg-sidebar);
+}
+
+.sidebar.sidebar-collapsed .user-profile-card {
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 6px;
+}
+
+.sidebar.sidebar-collapsed .user-info-group {
+  justify-content: center;
+  gap: 0;
+}
+
+.sidebar.sidebar-collapsed .user-details,
+.sidebar.sidebar-collapsed .user-profile-chevron {
+  display: none;
 }
 
 .sidebar-top-container {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .sidebar-brand-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 34px;
+  min-width: 0;
+}
+
+.sidebar-resize-handle {
+  width: 6px;
+  margin-left: -3px;
+  height: 100vh;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  z-index: 30;
+  background: transparent;
+  transition: background-color 0.18s ease;
+}
+
+.sidebar-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.18s ease;
+}
+
+.sidebar-resize-handle:hover::after,
+.sidebar-resize-handle.active::after {
+  background: var(--gold-accent);
 }
 
 .mobile-header-user {
@@ -187,6 +289,7 @@ svg,
   gap: 13px;
   padding-left: 6px;
   cursor: pointer;
+  min-width: 0;
 }
 
 .brand-icon-box {
@@ -306,25 +409,47 @@ svg,
 
 .user-profile-card:hover {
   background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.user-profile-card.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(167, 139, 250, 0.38);
+}
+
+.user-profile-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.user-profile-chevron.open {
+  transform: rotate(180deg);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .user-info-group {
   display: flex;
   align-items: center;
   gap: 11px;
+  min-width: 0;
 }
 
 .user-avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background-color: var(--gold-accent);
-  color: #1a101f;
+  background-color: var(--purple-brand);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 13.5px;
+  flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -1357,7 +1482,7 @@ svg,
 /* ── Tablet / Small Desktop ≤ 1024px ─────────────────────────────────────── */
 @media (max-width: 1024px) {
   .sidebar {
-    width: 220px;
+    width: var(--sidebar-width, 220px);
     padding: 22px 14px 20px 16px;
   }
 
@@ -1438,15 +1563,16 @@ svg,
   }
 
   /* Sidebar becomes clean modern app header with two neat rows */
-  .sidebar {
-    width: 100%;
+  .sidebar,
+  .sidebar.sidebar-collapsed {
+    width: 100% !important;
     max-width: 100%;
     min-width: 0;
     height: auto;
     position: sticky;
     top: 0;
     z-index: 900;
-    padding: 10px 14px 8px;
+    padding: 10px 14px 8px !important;
     background-color: var(--bg-sidebar);
     display: flex;
     flex-direction: column;
@@ -1456,6 +1582,18 @@ svg,
     overflow: visible;
   }
 
+  .sidebar.sidebar-collapsed .brand-text {
+    display: flex;
+  }
+
+  .sidebar.sidebar-collapsed .nav-item span:not(.nav-badge) {
+    display: inline-block;
+  }
+
+  .sidebar-resize-handle {
+    display: none !important;
+  }
+
   .sidebar-top-container {
     display: flex;
     flex-direction: column;
@@ -1463,7 +1601,8 @@ svg,
     width: 100%;
   }
 
-  .sidebar-brand-section {
+  .sidebar-brand-section,
+  .sidebar.sidebar-collapsed .sidebar-brand-section {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1471,7 +1610,8 @@ svg,
     margin-bottom: 0;
   }
 
-  .brand-wrapper {
+  .brand-wrapper,
+  .sidebar.sidebar-collapsed .brand-wrapper {
     margin-bottom: 0;
     padding-left: 0;
     gap: 10px;
@@ -1499,11 +1639,11 @@ svg,
   .mobile-header-user {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
-    padding: 3px 8px 3px 4px;
+    padding: 3px;
     flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
@@ -1562,6 +1702,15 @@ svg,
     border-radius: 12px;
     flex-wrap: nowrap;
     box-sizing: border-box;
+  }
+
+  .sidebar.sidebar-collapsed .nav-item {
+    padding: 8px 6px;
+    gap: 6px;
+  }
+
+  .sidebar.sidebar-collapsed .nav-badge {
+    display: none;
   }
 
   .nav-item {
@@ -1882,8 +2031,7 @@ svg,
   }
 
   .mobile-header-user {
-    padding: 2px 7px 2px 3px;
-    gap: 5px;
+    padding: 2px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 9999px;

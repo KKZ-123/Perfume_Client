@@ -8,7 +8,7 @@ import {
 } from './Icons';
 import { staffUsers } from '../data/mockData';
 import logoImg from '../assets/logo.png';
-import { API_ENDPOINTS, API_BASE_URL, saveAuthTokens } from '../config/api';
+import { API_ENDPOINTS, API_BASE_URL, saveAuthTokens, decodeJwtPayload, fetchFullUserProfile } from '../config/api';
 
 // Helper function to encode string to Base64
 const encodeBase64 = (str) => {
@@ -57,21 +57,38 @@ export const LoginView = ({ onLogin, sessionExpiredMessage = '' }) => {
       const resData = await response.json();
 
       if (response.ok && resData.success) {
-        const data = resData.data || {};
-        const initials = data.name
-          ? data.name.trim().split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
-          : 'PS';
-
+        const data = resData.data || resData.user || {};
         const accessToken = data.access_token || resData.access_token || data.accessToken || resData.accessToken;
         const refreshToken = data.refresh_token || resData.refresh_token || data.refreshToken || resData.refreshToken;
-        const resolvedUserId = data.userid || resData.userid || data.id || userId.trim();
+        const jwtClaims = decodeJwtPayload(accessToken) || {};
+        const jwtUser = jwtClaims.user || jwtClaims.data || jwtClaims;
 
-        const loggedInUser = {
-          id: resolvedUserId || 'usr-active',
-          name: data.name || 'Staff User',
-          email: data.email || data.userid || userId,
+        const resolvedUserId =
+          data.userid ||
+          resData.userid ||
+          jwtUser?.userid ||
+          data.id ||
+          userId.trim();
+
+        if (accessToken) {
+          saveAuthTokens({
+            accessToken,
+            refreshToken,
+            userid: resolvedUserId
+          });
+        }
+
+        const rawName = data.name || resData.name || jwtUser?.name || '';
+        const initials = rawName
+          ? rawName.trim().split(/\s+/).map((n) => n[0]).join('').substring(0, 2).toUpperCase()
+          : 'PS';
+
+        let loggedInUser = {
+          id: data.id || resData.id || jwtUser?.id || resolvedUserId || 'usr-active',
+          name: rawName || 'Staff User',
+          email: data.email || resData.email || jwtUser?.email || resolvedUserId || userId,
           userid: resolvedUserId,
-          role: data.role || 'Fragrance Specialist',
+          role: data.role || resData.role || jwtUser?.role || 'Fragrance Specialist',
           roleId: data.roleId || 'EMP-88301',
           initials: data.initials || initials,
           terminal: data.terminal || 'Terminal 01 (Downtown Flagship)',
@@ -83,12 +100,16 @@ export const LoginView = ({ onLogin, sessionExpiredMessage = '' }) => {
           ...data
         };
 
-        if (accessToken) {
-          saveAuthTokens({
-            accessToken,
-            refreshToken,
-            userid: resolvedUserId
-          });
+        try {
+          const fullProfile = await fetchFullUserProfile(loggedInUser);
+          if (fullProfile) {
+            loggedInUser = {
+              ...loggedInUser,
+              ...fullProfile
+            };
+          }
+        } catch {
+          // Continue with initial login payload if profile endpoint is unreachable
         }
 
         onLogin(loggedInUser, rememberMe);
