@@ -18,7 +18,15 @@ import { ExportReportModal } from './components/ExportReportModal';
 import { LogoutModal } from './components/LogoutModal';
 import { LoginView } from './components/LoginView';
 import { initialDashboardData, perfumeCatalog } from './data/mockData';
-import { clearAuthTokens, getRefreshToken, isJwtExpired, forceLogout, fetchFullUserProfile } from './config/api';
+import { 
+  clearAuthTokens, 
+  getRefreshToken, 
+  isJwtExpired, 
+  forceLogout, 
+  fetchFullUserProfile,
+  apiFetch,
+  API_ENDPOINTS 
+} from './config/api';
 import logoImg from './assets/logo.png';
 
 export default function App() {
@@ -236,6 +244,51 @@ export default function App() {
     };
   }, []);
 
+  // Fetch real perfumes from backend API if available
+  const fetchPerfumesList = useCallback(async () => {
+    try {
+      const res = await apiFetch(API_ENDPOINTS.PERFUMES, { method: 'GET' });
+      if (res.ok) {
+        const json = await res.json().catch(() => ({}));
+        const rawList = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : null);
+        if (rawList && rawList.length > 0) {
+          const normalized = rawList.map((item) => ({
+            id: item.id || item.syskey || `perf-${item.code || item.sku || Date.now()}`,
+            syskey: item.syskey || '',
+            name: item.name || 'Unnamed Fragrance',
+            brand: item.brand || item.brand_name || '',
+            brand_syskey: item.brand_syskey || '',
+            concentration: item.concentration || item.type || 'EDP',
+            type: item.type || item.concentration || 'EDP',
+            size: item.size || (item.size_ml ? `${item.size_ml} ml` : '100 ml'),
+            size_ml: item.size_ml || (item.size ? parseInt(item.size, 10) : 100),
+            sku: item.sku || item.code || '',
+            code: item.code || item.sku || '',
+            originalPrice: item.originalPrice !== undefined ? Number(item.originalPrice) : (item.original_price !== undefined ? Number(item.original_price) : 0),
+            price: Number(item.price ?? item.sell_price ?? 0),
+            sell_price: Number(item.sell_price ?? item.price ?? 0),
+            stock: Number(item.stock ?? item.qty ?? 0),
+            qty: Number(item.qty ?? item.stock ?? 0),
+            reorderLevel: Number(item.reorderLevel ?? item.reorder_level ?? 6),
+            category: item.category || 'Fragrance',
+            gender: item.gender || 'Unisex',
+            status: item.status || 'Active',
+            notes: item.notes || ''
+          }));
+          setCatalog(normalized);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch perfumes from API:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchPerfumesList();
+    }
+  }, [currentUser, fetchPerfumesList]);
+
   // Login handler
   const handleLogin = (user, remember) => {
     setCurrentUser(user);
@@ -446,6 +499,10 @@ export default function App() {
     );
   }
 
+  const lowStockCount = catalog.filter(
+    (item) => Number(item.stock ?? 0) <= Number(item.reorderLevel ?? 0)
+  ).length;
+
   return (
     <div
       className={`app-container ${isSidebarCollapsed ? 'sidebar-is-collapsed' : ''} ${isResizingSidebar ? 'is-resizing-sidebar' : ''}`}
@@ -506,11 +563,11 @@ export default function App() {
             <button
               className={`nav-item ${currentNav === 'stock' ? 'active' : ''}`}
               onClick={() => setCurrentNav('stock')}
-              title="Stock (4 low)"
+              title={lowStockCount > 0 ? `Stock (${lowStockCount} low)` : 'Stock'}
             >
               <BoxStockIcon className="w-5 h-5" />
               <span>Stock</span>
-              <span className="nav-badge">4 low</span>
+              {lowStockCount > 0 && <span className="nav-badge">{lowStockCount} low</span>}
             </button>
 
             <button

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CloseIcon, CheckIcon } from './Icons';
 
-export const NewSaleModal = ({ isOpen, onClose, catalog, onCompleteSale }) => {
+export const NewSaleModal = ({ isOpen, onClose, catalog = [], onCompleteSale }) => {
   const [customer, setCustomer] = useState('Walk-in');
   const [selectedPerfumeId, setSelectedPerfumeId] = useState(catalog[0]?.id || '');
   const [quantity, setQuantity] = useState(1);
@@ -58,12 +58,17 @@ export const NewSaleModal = ({ isOpen, onClose, catalog, onCompleteSale }) => {
               className="pos-select"
               value={selectedPerfumeId}
               onChange={(e) => setSelectedPerfumeId(e.target.value)}
+              disabled={catalog.length === 0}
             >
-              {catalog.map((item) => (
-                <option key={item.id} value={item.id} disabled={item.stock <= 0}>
-                  {item.name} {item.concentration.split(' ')[0]} {item.size} — ${item.price.toFixed(2)} ({item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'})
-                </option>
-              ))}
+              {catalog.length === 0 ? (
+                <option value="" disabled>No fragrances registered in stock</option>
+              ) : (
+                catalog.map((item) => (
+                  <option key={item.id} value={item.id} disabled={item.stock <= 0}>
+                    {item.name} {(item.concentration || '').split(' ')[0]} {item.size} — ${Number(item.price || 0).toFixed(2)} ({item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'})
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -77,6 +82,7 @@ export const NewSaleModal = ({ isOpen, onClose, catalog, onCompleteSale }) => {
                 className="pos-input"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                disabled={!selectedItem || selectedItem.stock <= 0}
               />
             </div>
 
@@ -97,11 +103,11 @@ export const NewSaleModal = ({ isOpen, onClose, catalog, onCompleteSale }) => {
           <div className="pos-cart-list">
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Fragrance Item:</span>
-              <span style={{ fontWeight: 600 }}>{selectedItem?.name} ({selectedItem?.size})</span>
+              <span style={{ fontWeight: 600 }}>{selectedItem?.name || 'None'} ({selectedItem?.size || '—'})</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Unit Price:</span>
-              <span>${selectedItem?.price.toFixed(2)}</span>
+              <span>${selectedItem ? Number(selectedItem.price).toFixed(2) : '0.00'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e8e2ee', paddingTop: '10px' }}>
               <span style={{ fontWeight: 700, fontSize: '16px' }}>Total Amount:</span>
@@ -113,7 +119,12 @@ export const NewSaleModal = ({ isOpen, onClose, catalog, onCompleteSale }) => {
             <button type="button" className="action-btn-outline" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="action-btn-primary" style={{ padding: '10px 24px' }}>
+            <button 
+              type="submit" 
+              className="action-btn-primary" 
+              style={{ padding: '10px 24px' }}
+              disabled={!selectedItem || selectedItem.stock <= 0}
+            >
               <CheckIcon className="w-4 h-4" />
               <span>Complete Sale (${total})</span>
             </button>

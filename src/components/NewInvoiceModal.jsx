@@ -330,11 +330,15 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
                             onChange={(e) => handlePerfumeChange(item.id, e.target.value)}
                             style={{ padding: '6px 10px', fontSize: '13px' }}
                           >
-                            {catalog.map((perf) => (
-                              <option key={perf.id} value={perf.id}>
-                                {perf.name} ({perf.size}) - ${perf.price.toFixed(2)} [{perf.stock} in stock]
-                              </option>
-                            ))}
+                            {catalog.length === 0 ? (
+                              <option value="" disabled>No fragrances registered</option>
+                            ) : (
+                              catalog.map((perf) => (
+                                <option key={perf.id} value={perf.id}>
+                                  {perf.name} ({perf.size}) - ${Number(perf.price || 0).toFixed(2)} [{perf.stock} in stock]
+                                </option>
+                              ))
+                            )}
                           </select>
                         </td>
                         <td style={{ padding: '8px 8px' }}>
