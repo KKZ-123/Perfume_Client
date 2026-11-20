@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { PlusIcon, BoxStockIcon } from './Icons';
 import { StockRegisterModal } from './StockRegisterModal';
 
-// Helper to format price value without $ and without trailing .00
-const formatPriceValue = (val) => {
+// Helper to format numeric values with comma separators, without $ and without trailing .00
+const formatNumberValue = (val) => {
   if (val === undefined || val === null || val === '') return '—';
   const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]+/g, ''));
   if (isNaN(num)) return '—';
   if (num === 0) return '0';
   // Strip trailing .00 or clean decimal without trailing zeroes
-  return Number.isInteger(num) ? String(num) : String(parseFloat(num.toFixed(2)));
+  const isInt = Number.isInteger(num);
+  const formattedStr = isInt ? String(num) : String(parseFloat(num.toFixed(2)));
+  const parts = formattedStr.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
 };
 
 export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) => {
@@ -80,14 +84,14 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
               className={`time-pill ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              All items ({catalog.length})
+              All items ({formatNumberValue(catalog.length)})
             </button>
             <button
               type="button"
               className={`time-pill ${filter === 'low' ? 'active' : ''}`}
               onClick={() => setFilter('low')}
             >
-              Low stock ({lowStockCount})
+              Low stock ({formatNumberValue(lowStockCount)})
             </button>
           </div>
 
@@ -182,20 +186,20 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
                       <td className="col-size">{item.size || '—'}</td>
                       <td className="col-orig-price">
                         <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          {formatPriceValue(item.originalPrice ?? item.original_price)}
+                          {formatNumberValue(item.originalPrice ?? item.original_price)}
                         </div>
                       </td>
                       <td className="col-price">
                         <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                          {formatPriceValue(item.price ?? item.sell_price)}
+                          {formatNumberValue(item.price ?? item.sell_price)}
                         </div>
                       </td>
                       <td className="col-stock" style={{ fontWeight: 700, fontSize: '14px' }}>
                         <span style={{ color: isOutOfStock ? 'var(--red-alert)' : isLowStock ? 'var(--amber-badge-text)' : 'inherit' }}>
-                          {item.stock} units
+                          {formatNumberValue(item.stock)} units
                         </span>
                       </td>
-                      <td className="col-reorder" style={{ color: 'var(--text-muted)' }}>{item.reorderLevel} units</td>
+                      <td className="col-reorder" style={{ color: 'var(--text-muted)' }}>{formatNumberValue(item.reorderLevel)} units</td>
                       <td>
                         <button
                           type="button"

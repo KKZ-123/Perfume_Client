@@ -47,6 +47,19 @@ const generateSuggestedSku = (name, concentration, size) => {
   return `${initials}-${concCode}-${sizeCode}`;
 };
 
+// Helper to format numeric values with comma separators, without $ and without trailing .00
+const formatNumberValue = (val) => {
+  if (val === undefined || val === null || val === '') return '—';
+  const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(num)) return '—';
+  if (num === 0) return '0';
+  const isInt = Number.isInteger(num);
+  const formattedStr = isInt ? String(num) : String(parseFloat(num.toFixed(2)));
+  const parts = formattedStr.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 export const StockRegisterModal = ({
   isOpen,
   onClose,
@@ -1064,19 +1077,19 @@ const StockRegisterForm = ({
                       {currentSelectedItem.stock === 0 
                         ? 'Out of stock' 
                         : currentSelectedItem.stock <= currentSelectedItem.reorderLevel 
-                          ? `${currentSelectedItem.stock} low stock` 
-                          : `${currentSelectedItem.stock} in stock`}
+                          ? `${formatNumberValue(currentSelectedItem.stock)} low stock` 
+                          : `${formatNumberValue(currentSelectedItem.stock)} in stock`}
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: '12px' }}>
                     <span>Size: {currentSelectedItem.size}</span>
                     <span>Concentration: {currentSelectedItem.concentration}</span>
                     {currentSelectedItem.gender && <span>Gender: {currentSelectedItem.gender}</span>}
-                    <span>Retail Price: {Number.isInteger(Number(currentSelectedItem.price)) ? Number(currentSelectedItem.price) : parseFloat(Number(currentSelectedItem.price || 0).toFixed(2))}</span>
+                    <span>Retail Price: {formatNumberValue(currentSelectedItem.price)}</span>
                     {Number(currentSelectedItem.originalPrice) > 0 && (
-                      <span>Original Price: {Number.isInteger(Number(currentSelectedItem.originalPrice)) ? Number(currentSelectedItem.originalPrice) : parseFloat(Number(currentSelectedItem.originalPrice).toFixed(2))}</span>
+                      <span>Original Price: {formatNumberValue(currentSelectedItem.originalPrice)}</span>
                     )}
-                    <span>Reorder Level: {currentSelectedItem.reorderLevel} units</span>
+                    <span>Reorder Level: {formatNumberValue(currentSelectedItem.reorderLevel)} units</span>
                   </div>
                 </div>
               )}
@@ -1096,7 +1109,7 @@ const StockRegisterForm = ({
                         className={`time-pill ${restockQty === num ? 'active' : ''}`}
                         style={{ padding: '2px 8px', fontSize: '11px', cursor: 'pointer' }}
                       >
-                        +{num}
+                        +{formatNumberValue(num)}
                       </button>
                     ))}
                   </div>
@@ -1126,7 +1139,7 @@ const StockRegisterForm = ({
                 }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Projected New Stock:</span>
                   <span style={{ fontWeight: 700, color: 'var(--purple-brand)', fontSize: '15px' }}>
-                    {currentSelectedItem.stock} + {restockQty || 0} = {(currentSelectedItem.stock || 0) + (parseInt(restockQty, 10) || 0)} units
+                    {formatNumberValue(currentSelectedItem.stock)} + {formatNumberValue(restockQty || 0)} = {formatNumberValue((currentSelectedItem.stock || 0) + (parseInt(restockQty, 10) || 0))} units
                   </span>
                 </div>
               )}
@@ -1134,7 +1147,7 @@ const StockRegisterForm = ({
               {/* Price & Reorder Level Update (Optional) */}
               <div className="sr-row-pricing">
                 <div className="pos-form-group" style={{ marginBottom: 0 }}>
-                  <label className="pos-label">Adjust Original Price ($)</label>
+                  <label className="pos-label">Adjust Original Price</label>
                   <input
                     type="number"
                     step="0.01"
@@ -1147,7 +1160,7 @@ const StockRegisterForm = ({
                 </div>
 
                 <div className="pos-form-group" style={{ marginBottom: 0 }}>
-                  <label className="pos-label">Adjust Retail Price ($)</label>
+                  <label className="pos-label">Adjust Retail Price</label>
                   <input
                     type="number"
                     step="0.01"

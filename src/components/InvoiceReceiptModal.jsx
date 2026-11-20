@@ -370,9 +370,9 @@ export const InvoiceReceiptModal = ({ isOpen, onClose, invoice }) => {
                         {line.size && <div className="receipt-item-sub">{line.size}</div>}
                       </td>
                       <td className="receipt-td-qty">{line.qty}</td>
-                      <td className="receipt-td-price">${Number(line.price).toFixed(2)}</td>
+                      <td className="receipt-td-price">${Number(line.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="receipt-td-total">
-                        ${(Number(line.price) * line.qty).toFixed(2)}
+                        ${(Number(line.price) * line.qty).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))}
@@ -387,19 +387,19 @@ export const InvoiceReceiptModal = ({ isOpen, onClose, invoice }) => {
             <div className="receipt-totals-section">
               <div className="receipt-total-row">
                 <span>Subtotal (Net):</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="receipt-total-row">
                 <span>Commercial Tax / VAT (5%):</span>
-                <span>${taxAmount.toFixed(2)}</span>
+                <span>${taxAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="receipt-total-row receipt-grand-total">
                 <span>TOTAL DUE:</span>
-                <span>${rawTotal.toFixed(2)}</span>
+                <span>${rawTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="receipt-total-row receipt-paid-row">
                 <span>Payment Method ({invoice.payment}):</span>
-                <span>${rawTotal.toFixed(2)}</span>
+                <span>${rawTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="receipt-total-row receipt-change-row">
                 <span>Balance / Change:</span>

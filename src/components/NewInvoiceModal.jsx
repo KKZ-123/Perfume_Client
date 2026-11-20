@@ -140,7 +140,7 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
       customer: customer.trim(),
       customerContact: customerContact.trim(),
       items: totalItemsCount,
-      total: `$${total.toFixed(2)}`,
+      total: `$${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       rawTotal: total,
       subtotal: subtotal,
       tax: tax,
@@ -320,7 +320,7 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
                 <tbody>
                   {items.map((item) => {
                     const selectedPerf = catalog.find(p => p.id === item.perfumeId);
-                    const lineTotal = (item.qty * item.price).toFixed(2);
+                    const lineTotal = (item.qty * item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     return (
                       <tr key={item.id} style={{ borderBottom: '1px solid #f2edf6' }}>
                         <td style={{ padding: '8px 12px' }}>
@@ -335,7 +335,7 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
                             ) : (
                               catalog.map((perf) => (
                                 <option key={perf.id} value={perf.id}>
-                                  {perf.name} ({perf.size}) - ${Number(perf.price || 0).toFixed(2)} [{perf.stock} in stock]
+                                  {perf.name} ({perf.size}) - ${Number(perf.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} [{Number(perf.stock || 0).toLocaleString('en-US')} in stock]
                                 </option>
                               ))
                             )}
@@ -409,11 +409,11 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
           <div className="pos-cart-list" style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Total Fragrance Items:</span>
-              <span style={{ fontWeight: 600 }}>{totalItemsCount} units</span>
+              <span style={{ fontWeight: 600 }}>{Number(totalItemsCount).toLocaleString('en-US')} units</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Commercial Tax (5% Incl.):</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>${tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e8e2ee', paddingTop: '10px', marginTop: '6px' }}>
               <div>
@@ -421,7 +421,7 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
                 <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Status: {status} · Method: {paymentMethod}</span>
               </div>
               <span style={{ fontWeight: 700, fontSize: '22px', color: 'var(--purple-brand)' }}>
-                ${total.toFixed(2)}
+                ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -433,7 +433,7 @@ export const NewInvoiceModal = ({ isOpen, onClose, catalog = [], onCreateInvoice
             </button>
             <button type="submit" className="action-btn-primary" style={{ padding: '10px 24px' }}>
               <CheckIcon className="w-4 h-4" />
-              <span>Create Invoice (${total.toFixed(2)})</span>
+              <span>Create Invoice (${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
             </button>
           </div>
         </form>

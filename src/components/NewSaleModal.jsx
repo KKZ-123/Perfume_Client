@@ -10,7 +10,7 @@ export const NewSaleModal = ({ isOpen, onClose, catalog = [], onCompleteSale }) 
   if (!isOpen) return null;
 
   const selectedItem = catalog.find((p) => p.id === selectedPerfumeId) || catalog[0];
-  const total = (selectedItem ? selectedItem.price * quantity : 0).toFixed(2);
+  const total = (selectedItem ? selectedItem.price * quantity : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,7 +65,7 @@ export const NewSaleModal = ({ isOpen, onClose, catalog = [], onCompleteSale }) 
               ) : (
                 catalog.map((item) => (
                   <option key={item.id} value={item.id} disabled={item.stock <= 0}>
-                    {item.name} {(item.concentration || '').split(' ')[0]} {item.size} — ${Number(item.price || 0).toFixed(2)} ({item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'})
+                    {item.name} {(item.concentration || '').split(' ')[0]} {item.size} — ${Number(item.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({item.stock > 0 ? `${Number(item.stock).toLocaleString('en-US')} in stock` : 'Out of stock'})
                   </option>
                 ))
               )}
@@ -107,7 +107,7 @@ export const NewSaleModal = ({ isOpen, onClose, catalog = [], onCompleteSale }) 
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Unit Price:</span>
-              <span>${selectedItem ? Number(selectedItem.price).toFixed(2) : '0.00'}</span>
+              <span>${selectedItem ? Number(selectedItem.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e8e2ee', paddingTop: '10px' }}>
               <span style={{ fontWeight: 700, fontSize: '16px' }}>Total Amount:</span>
