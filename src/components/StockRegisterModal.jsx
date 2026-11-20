@@ -932,7 +932,7 @@ const StockRegisterForm = ({
                     className="pos-input"
                     value={originalPrice}
                     onChange={(e) => setOriginalPrice(e.target.value)}
-                    placeholder="140.00"
+                    placeholder="140"
                     style={{ fontWeight: 600 }}
                   />
                 </div>
@@ -948,7 +948,7 @@ const StockRegisterForm = ({
                     className="pos-input"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="165.00"
+                    placeholder="165"
                     required
                     style={{ fontWeight: 600 }}
                   />
@@ -1072,8 +1072,10 @@ const StockRegisterForm = ({
                     <span>Size: {currentSelectedItem.size}</span>
                     <span>Concentration: {currentSelectedItem.concentration}</span>
                     {currentSelectedItem.gender && <span>Gender: {currentSelectedItem.gender}</span>}
-                    <span>Retail Price: ${currentSelectedItem.price?.toFixed(2)}</span>
-                    {currentSelectedItem.originalPrice > 0 && <span>Original Price: ${currentSelectedItem.originalPrice?.toFixed(2)}</span>}
+                    <span>Retail Price: {Number.isInteger(Number(currentSelectedItem.price)) ? Number(currentSelectedItem.price) : parseFloat(Number(currentSelectedItem.price || 0).toFixed(2))}</span>
+                    {Number(currentSelectedItem.originalPrice) > 0 && (
+                      <span>Original Price: {Number.isInteger(Number(currentSelectedItem.originalPrice)) ? Number(currentSelectedItem.originalPrice) : parseFloat(Number(currentSelectedItem.originalPrice).toFixed(2))}</span>
+                    )}
                     <span>Reorder Level: {currentSelectedItem.reorderLevel} units</span>
                   </div>
                 </div>

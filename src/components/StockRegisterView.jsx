@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { PlusIcon, BoxStockIcon } from './Icons';
 import { StockRegisterModal } from './StockRegisterModal';
 
+// Helper to format price value without $ and without trailing .00
+const formatPriceValue = (val) => {
+  if (val === undefined || val === null || val === '') return '—';
+  const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(num)) return '—';
+  if (num === 0) return '0';
+  // Strip trailing .00 or clean decimal without trailing zeroes
+  return Number.isInteger(num) ? String(num) : String(parseFloat(num.toFixed(2)));
+};
+
 export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -103,10 +113,10 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
                 <th className="col-sku">SKU</th>
                 <th className="col-concentration">Concentration</th>
                 <th className="col-size">Size</th>
-                <th>Price</th>
+                <th className="col-orig-price">Original Price</th>
+                <th className="col-price">Price</th>
                 <th className="col-stock">In Stock</th>
                 <th className="col-reorder">Reorder Level</th>
-                <th className="col-status">Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -170,13 +180,15 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
                       </td>
                       <td className="col-concentration">{item.concentration || '—'}</td>
                       <td className="col-size">{item.size || '—'}</td>
-                      <td>
-                        <div style={{ fontWeight: 700 }}>${Number(item.price || 0).toFixed(2)}</div>
-                        {item.originalPrice !== undefined && Number(item.originalPrice) > 0 && (
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                            Orig: ${Number(item.originalPrice).toFixed(2)}
-                          </div>
-                        )}
+                      <td className="col-orig-price">
+                        <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {formatPriceValue(item.originalPrice ?? item.original_price)}
+                        </div>
+                      </td>
+                      <td className="col-price">
+                        <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                          {formatPriceValue(item.price ?? item.sell_price)}
+                        </div>
                       </td>
                       <td className="col-stock" style={{ fontWeight: 700, fontSize: '14px' }}>
                         <span style={{ color: isOutOfStock ? 'var(--red-alert)' : isLowStock ? 'var(--amber-badge-text)' : 'inherit' }}>
@@ -184,15 +196,6 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
                         </span>
                       </td>
                       <td className="col-reorder" style={{ color: 'var(--text-muted)' }}>{item.reorderLevel} units</td>
-                      <td className="col-status">
-                        {isOutOfStock ? (
-                          <span className="stock-tag out">Out of stock</span>
-                        ) : isLowStock ? (
-                          <span className="stock-tag low">{item.stock} left</span>
-                        ) : (
-                          <span className="status-badge paid" style={{ fontSize: '11px' }}>In Stock</span>
-                        )}
-                      </td>
                       <td>
                         <button
                           type="button"
