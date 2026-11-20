@@ -17,6 +17,50 @@ export const DashboardView = ({
 }) => {
   const [activeTimeRange, setActiveTimeRange] = useState('Today');
   const [selectedDay, setSelectedDay] = useState('Wed');
+  const [hoveredDay, setHoveredDay] = useState(null);
+
+  // Build responsive SVG line chart geometry
+  const chartDays = data?.salesChart?.days || [];
+  const chartWidth = 640;
+  const chartHeight = 250;
+  const padLeft = 38;
+  const padRight = 38;
+  const padTop = 36;
+  const padBottom = 36;
+  const plotWidth = chartWidth - padLeft - padRight;
+  const plotHeight = chartHeight - padTop - padBottom;
+  const yBottom = padTop + plotHeight;
+
+  const maxRawAmount = Math.max(
+    ...chartDays.map((d) => Number(d.rawAmount) || 0),
+    1
+  );
+  const yMax = maxRawAmount * 1.1;
+
+  const chartPoints = chartDays.map((item, idx) => {
+    const x =
+      chartDays.length > 1
+        ? padLeft + (idx / (chartDays.length - 1)) * plotWidth
+        : padLeft + plotWidth / 2;
+    const val = Number(item.rawAmount) || 0;
+    const y = yBottom - (val / yMax) * plotHeight;
+    return { ...item, x, y };
+  });
+
+  const buildLinePath = (pts) => {
+    if (pts.length === 0) return '';
+    return pts
+      .map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`)
+      .join(' ');
+  };
+
+  const linePath = buildLinePath(chartPoints);
+  const areaPath =
+    chartPoints.length > 0
+      ? `${linePath} L ${chartPoints[chartPoints.length - 1].x} ${yBottom} L ${chartPoints[0].x} ${yBottom} Z`
+      : '';
+  const gridRatios = [0, 0.33, 0.66, 1];
+  const highlightedDay = hoveredDay || selectedDay;
 
   // Handle switching time filter with realistic dynamic data adjustments
   const timeMultipliers = {
@@ -134,28 +178,129 @@ export const DashboardView = ({
             </div>
           </div>
 
-          {/* Bar Chart Container */}
-          <div className="chart-container">
-            {data.salesChart.days.map((item) => {
-              const isActive = selectedDay === item.day || (selectedDay === '' && item.active);
-              return (
-                <div 
-                  key={item.day} 
-                  className={`chart-bar-column ${isActive ? 'active' : ''}`}
-                  onClick={() => setSelectedDay(item.day)}
-                  title={`${item.day}: ${item.amount} revenue`}
-                >
-                  <span className="chart-bar-amount">{item.amount}</span>
-                  <div className="chart-bar-track">
-                    <div 
-                      className={`chart-bar-fill ${isActive ? 'active' : ''}`}
-                      style={{ height: `${item.heightPercent}%` }}
+          {/* Line Chart Container */}
+          <div className="line-chart-container">
+            <svg
+              className="line-chart-svg"
+              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+              preserveAspectRatio="xMidYMid meet"
+              role="img"
+              aria-label="Sales trend over the last 7 days"
+            >
+              <defs>
+                <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6b2f8a" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#6b2f8a" stopOpacity="0.01" />
+                </linearGradient>
+              </defs>
+
+              {/* Subtle horizontal gridlines */}
+              {gridRatios.map((ratio, idx) => {
+                const gy = padTop + ratio * plotHeight;
+                return (
+                  <line
+                    key={idx}
+                    x1={padLeft - 12}
+                    y1={gy}
+                    x2={chartWidth - padRight + 12}
+                    y2={gy}
+                    className={idx === gridRatios.length - 1 ? 'line-chart-baseline' : 'line-chart-gridline'}
+                  />
+                );
+              })}
+
+              {/* Soft gradient area under the line */}
+              {areaPath && (
+                <path d={areaPath} fill="url(#salesAreaGradient)" />
+              )}
+
+              {/* Smooth sales trend line */}
+              {linePath && (
+                <path
+                  d={linePath}
+                  fill="none"
+                  className="line-chart-stroke"
+                />
+              )}
+
+              {/* Interactive points, vertical guide, value labels, and day labels */}
+              {chartPoints.map((pt, idx) => {
+                const isActive =
+                  highlightedDay === pt.day || (highlightedDay === '' && pt.active);
+                const colWidth =
+                  chartPoints.length > 1 ? plotWidth / (chartPoints.length - 1) : plotWidth;
+
+                return (
+                  <g
+                    key={pt.day}
+                    className={`line-chart-point-group ${isActive ? 'active' : ''}`}
+                    onClick={() => setSelectedDay(pt.day)}
+                    onMouseEnter={() => setHoveredDay(pt.day)}
+                    onMouseLeave={() => setHoveredDay(null)}
+                  >
+                    <title>{`${pt.day}: ${pt.amount} revenue`}</title>
+
+                    {/* Invisible hit column for easy click/hover */}
+                    <rect
+                      x={pt.x - colWidth / 2}
+                      y={0}
+                      width={colWidth}
+                      height={chartHeight}
+                      fill="transparent"
                     />
-                  </div>
-                  <span className="chart-day-label">{item.day}</span>
-                </div>
-              );
-            })}
+
+                    {/* Vertical dashed guide line for active/hovered day */}
+                    {isActive && (
+                      <line
+                        x1={pt.x}
+                        y1={pt.y + 6}
+                        x2={pt.x}
+                        y2={yBottom}
+                        className="line-chart-guide"
+                      />
+                    )}
+
+                    {/* Outer halo for active/hovered point */}
+                    {isActive && (
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="11"
+                        className="line-chart-halo"
+                      />
+                    )}
+
+                    {/* Point marker */}
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={isActive ? 5.5 : 4.5}
+                      className={`line-chart-dot ${isActive ? 'active' : ''}`}
+                    />
+
+                    {/* Revenue amount label */}
+                    <text
+                      x={pt.x}
+                      y={Math.max(16, pt.y - 14)}
+                      textAnchor="middle"
+                      className={`line-chart-amount ${isActive ? 'active' : ''}`}
+                    >
+                      {pt.amount}
+                    </text>
+
+                    {/* Day label on X-axis */}
+                    <text
+                      x={pt.x}
+                      y={chartHeight - 10}
+                      textAnchor="middle"
+                      className={`line-chart-day ${isActive ? 'active' : ''}`}
+                    >
+                      {pt.day}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
         </div>
 

@@ -221,8 +221,8 @@ svg,
 .sidebar.sidebar-collapsed .user-profile-card {
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
-  padding: 10px 6px;
+  gap: 8px;
+  padding: 7px 6px;
 }
 
 .sidebar.sidebar-collapsed .user-info-group {
@@ -400,10 +400,10 @@ svg,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 6px 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  border-radius: 12px;
   transition: all 0.2s ease;
 }
 
@@ -434,13 +434,13 @@ svg,
 .user-info-group {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 9px;
   min-width: 0;
 }
 
 .user-avatar {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background-color: var(--purple-brand);
   color: #ffffff;
@@ -448,7 +448,7 @@ svg,
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 11.5px;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
@@ -459,13 +459,15 @@ svg,
 }
 
 .user-name {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
+  line-height: 1.2;
   color: #ffffff;
 }
 
 .user-role {
-  font-size: 11px;
+  font-size: 10.5px;
+  line-height: 1.2;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 1px;
 }
@@ -810,6 +812,104 @@ svg,
 .chart-bar-column.active .chart-day-label {
   color: var(--purple-primary);
   font-weight: 700;
+}
+
+/* Sales Line Chart */
+.line-chart-container {
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.line-chart-svg {
+  display: block;
+  width: 100%;
+  height: 250px;
+  overflow: visible;
+}
+
+.line-chart-gridline {
+  stroke: #ede8f3;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.line-chart-baseline {
+  stroke: #e5deee;
+  stroke-width: 1.2;
+}
+
+.line-chart-stroke {
+  stroke: var(--purple-brand);
+  stroke-width: 2.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line-chart-point-group {
+  cursor: pointer;
+}
+
+.line-chart-guide {
+  stroke: rgba(107, 47, 138, 0.35);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 3;
+}
+
+.line-chart-halo {
+  fill: rgba(107, 47, 138, 0.16);
+}
+
+.line-chart-dot {
+  fill: #ffffff;
+  stroke: var(--purple-brand);
+  stroke-width: 2.5;
+  transition: r 0.18s ease, fill 0.18s ease, stroke 0.18s ease;
+}
+
+.line-chart-dot.active {
+  fill: var(--purple-primary);
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+.line-chart-amount {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--text-secondary);
+  transition: fill 0.18s ease;
+}
+
+.line-chart-amount.active {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--purple-primary);
+}
+
+.line-chart-day {
+  font-size: 12.5px;
+  font-weight: 600;
+  fill: var(--text-secondary);
+  transition: fill 0.18s ease;
+}
+
+.line-chart-day.active {
+  font-weight: 700;
+  fill: var(--purple-primary);
+}
+
+@media (max-width: 640px) {
+  .line-chart-container {
+    min-height: 195px;
+  }
+
+  .line-chart-svg {
+    height: auto;
+    min-height: 195px;
+  }
 }
 
 /* Top Sellers List */

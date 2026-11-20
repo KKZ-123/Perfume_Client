@@ -76,16 +76,17 @@ export const ProfilePopover = ({
 
   // Compute smart position anchored near the clicked profile element
   const getPopoverStyle = () => {
+    const popoverWidth = 210;
     const baseStyle = {
       position: 'fixed',
       zIndex: 1300,
-      width: '256px',
+      width: `${popoverWidth}px`,
       maxWidth: 'calc(100vw - 24px)',
       background: '#261b30',
-      borderRadius: '18px',
+      borderRadius: '14px',
       border: '1px solid rgba(255, 255, 255, 0.09)',
       boxShadow: '0 18px 42px rgba(0, 0, 0, 0.48), 0 4px 14px rgba(0, 0, 0, 0.28)',
-      padding: '18px',
+      padding: '14px',
       color: '#ffffff',
       animation: 'dropdownFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1)'
     };
@@ -103,7 +104,7 @@ export const ProfilePopover = ({
       return {
         ...baseStyle,
         bottom: `${Math.max(14, window.innerHeight - anchorRect.top + 12)}px`,
-        left: `${Math.max(12, Math.min(anchorRect.left, window.innerWidth - 272))}px`
+        left: `${Math.max(12, Math.min(anchorRect.left, window.innerWidth - (popoverWidth + 12)))}px`
       };
     }
 
@@ -156,10 +157,10 @@ export const ProfilePopover = ({
       />
 
       {/* Simple User Info: Name & User ID */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 4px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', padding: '2px 4px' }}>
         <div
           style={{
-            fontSize: '16px',
+            fontSize: '14.5px',
             fontWeight: 700,
             color: '#ffffff',
             lineHeight: 1.3,
@@ -171,7 +172,7 @@ export const ProfilePopover = ({
         <div
           title={displayUserId}
           style={{
-            fontSize: '13px',
+            fontSize: '12.5px',
             fontWeight: 400,
             color: 'rgba(255, 255, 255, 0.72)',
             lineHeight: 1.4,
@@ -189,7 +190,7 @@ export const ProfilePopover = ({
         style={{
           height: '1px',
           background: 'rgba(255, 255, 255, 0.08)',
-          margin: '12px 0 8px 0'
+          margin: '10px 0 6px 0'
         }}
       />
 
@@ -205,17 +206,18 @@ export const ProfilePopover = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
+              gap: '10px',
               width: '100%',
-              padding: '10px 12px',
+              padding: '8px 10px',
               border: 'none',
               borderRadius: '10px',
               background: 'transparent',
               color: 'rgba(255, 255, 255, 0.92)',
-              fontSize: '14px',
+              fontSize: '13.5px',
               fontWeight: 500,
               cursor: 'pointer',
               textAlign: 'left',
+              whiteSpace: 'nowrap',
               transition: 'background 0.15s ease, color 0.15s ease'
             }}
             onMouseEnter={(e) => {
@@ -227,7 +229,7 @@ export const ProfilePopover = ({
               e.currentTarget.style.color = 'rgba(255, 255, 255, 0.92)';
             }}
           >
-            <KeyIcon size={16} />
+            <KeyIcon size={15} />
             <span>Change password</span>
           </button>
         </div>
@@ -238,7 +240,7 @@ export const ProfilePopover = ({
         style={{
           height: '1px',
           background: 'rgba(255, 255, 255, 0.08)',
-          margin: '8px 0 12px 0'
+          margin: '6px 0 10px 0'
         }}
       />
 
@@ -253,17 +255,18 @@ export const ProfilePopover = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '11px',
+            gap: '10px',
             width: '100%',
-            padding: '11px 14px',
+            padding: '9px 10px',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: '10px',
             background: 'rgba(239, 68, 68, 0.15)',
             color: '#f87171',
-            fontSize: '14px',
+            fontSize: '13.5px',
             fontWeight: 500,
             cursor: 'pointer',
             textAlign: 'left',
+            whiteSpace: 'nowrap',
             transition: 'background 0.15s ease, color 0.15s ease'
           }}
           onMouseEnter={(e) => {
@@ -275,7 +278,7 @@ export const ProfilePopover = ({
             e.currentTarget.style.color = '#f87171';
           }}
         >
-          <LogoutIcon size={16} />
+          <LogoutIcon size={15} />
           <span>Sign out</span>
         </button>
       )}
