@@ -545,13 +545,25 @@ svg,
 .header-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
+}
+
+.header-actions .header-search-input {
+  width: 240px;
+  min-width: 180px;
+  flex: 0 1 240px;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 9999px;
+  background-color: #ffffff;
 }
 
 /* Filter Pills */
 .time-filter-group {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   background-color: #ede9f2;
   padding: 4px;
   border-radius: 9999px;
@@ -559,7 +571,7 @@ svg,
 }
 
 .time-pill {
-  padding: 7px 18px;
+  padding: 7px 16px;
   border-radius: 9999px;
   border: none;
   font-size: 13px;
@@ -567,6 +579,8 @@ svg,
   color: var(--text-secondary);
   background: transparent;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
@@ -589,6 +603,8 @@ svg,
   font-weight: 600;
   color: var(--text-main);
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   transition: all 0.2s ease;
 }
@@ -611,6 +627,8 @@ svg,
   font-weight: 600;
   color: #ffffff;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   box-shadow: 0 3px 10px rgba(59, 29, 76, 0.25);
   transition: all 0.2s ease;
 }

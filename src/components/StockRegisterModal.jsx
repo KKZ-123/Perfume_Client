@@ -923,7 +923,7 @@ const StockRegisterForm = ({
               <div className="sr-row-pricing">
                 <div className="pos-form-group" style={{ marginBottom: 0 }}>
                   <label className="pos-label">
-                    Original Price ($)
+                    Original Price
                   </label>
                   <input
                     type="number"
@@ -939,7 +939,7 @@ const StockRegisterForm = ({
 
                 <div className="pos-form-group" style={{ marginBottom: 0 }}>
                   <label className="pos-label">
-                    Retail Price ($) <span style={{ color: 'var(--red-alert)' }}>*</span>
+                    Retail Price <span style={{ color: 'var(--red-alert)' }}>*</span>
                   </label>
                   <input
                     type="number"

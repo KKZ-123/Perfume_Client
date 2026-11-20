@@ -11,20 +11,22 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
   const [modalMode, setModalMode] = useState('new'); // 'new' or 'restock'
   const [selectedItemForModal, setSelectedItemForModal] = useState(null);
 
-  const lowStockCount = catalog.filter(item => item.stock <= item.reorderLevel).length;
+  const lowStockCount = catalog.filter(
+    (item) => Number(item.stock ?? 0) <= Number(item.reorderLevel ?? 0)
+  ).length;
 
   const filteredCatalog = catalog.filter((item) => {
-    const q = search.toLowerCase();
-    const matchesSearch = 
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
       !q ||
-      item.name.toLowerCase().includes(q) ||
+      (item.name && item.name.toLowerCase().includes(q)) ||
       (item.brand && item.brand.toLowerCase().includes(q)) ||
-      item.sku.toLowerCase().includes(q) ||
+      (item.sku && item.sku.toLowerCase().includes(q)) ||
       (item.category && item.category.toLowerCase().includes(q)) ||
       (item.gender && item.gender.toLowerCase().includes(q));
 
     if (filter === 'low') {
-      return matchesSearch && item.stock <= item.reorderLevel;
+      return matchesSearch && Number(item.stock ?? 0) <= Number(item.reorderLevel ?? 0);
     }
     return matchesSearch;
   });
@@ -118,7 +120,11 @@ export const StockRegisterView = ({ catalog = [], onRestock, onRegisterStock }) 
                         No inventory items found
                       </div>
                       <div style={{ fontSize: '13px' }}>
-                        {search ? `No perfumes matching "${search}"` : 'Your stock register has no registered items yet.'}
+                        {search
+                          ? `No perfumes matching "${search}"`
+                          : filter === 'low'
+                            ? 'All fragrances are currently above their reorder level.'
+                            : 'Your stock register has no registered items yet.'}
                       </div>
                       <button
                         type="button"
